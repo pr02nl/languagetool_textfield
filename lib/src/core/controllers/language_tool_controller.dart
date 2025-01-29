@@ -111,8 +111,8 @@ class LanguageToolController extends TextEditingController {
   @override
   TextSpan buildTextSpan({
     required BuildContext context,
-    TextStyle? style,
     required bool withComposing,
+    TextStyle? style,
   }) {
     final formattedTextSpans = _generateSpans(
       context,
@@ -200,7 +200,7 @@ class LanguageToolController extends TextEditingController {
       final Color mistakeColor = _getMistakeColor(mistake.type);
 
       /// Create a gesture recognizer for mistake
-      final _onTap = TapGestureRecognizer()
+      final onTap = TapGestureRecognizer()
         ..onTapDown = (details) {
           popupWidget?.show(
             context,
@@ -223,7 +223,7 @@ class LanguageToolController extends TextEditingController {
         };
 
       /// Adding recognizer to the list for future disposing
-      _recognizers.add(_onTap);
+      _recognizers.add(onTap);
 
       /// Mistake highlighted TextSpan
       yield TextSpan(
@@ -235,14 +235,14 @@ class LanguageToolController extends TextEditingController {
             ),
             mouseCursor: WidgetStateMouseCursor.textable,
             style: style?.copyWith(
-              backgroundColor: mistakeColor.withOpacity(
-                highlightStyle.backgroundOpacity,
+              backgroundColor: mistakeColor.withValues(
+                alpha: highlightStyle.backgroundOpacity,
               ),
               decoration: highlightStyle.decoration,
               decorationColor: mistakeColor,
               decorationThickness: highlightStyle.mistakeLineThickness,
             ),
-            recognizer: _onTap,
+            recognizer: onTap,
           ),
         ],
       );
