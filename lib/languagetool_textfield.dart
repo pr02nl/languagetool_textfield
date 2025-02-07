@@ -8,6 +8,7 @@ export 'src/core/model/language_tool_raw.dart';
 export 'src/core/model/match.dart';
 export 'src/core/model/replacement.dart';
 export 'src/core/model/rule.dart';
+export 'src/domain/formatted_text_formatter.dart';
 export 'src/domain/highlight_style.dart';
 export 'src/domain/language_check_service.dart';
 export 'src/domain/mistake.dart';
