@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:languagetool_textfield/src/client/language_tool_client.dart';
 import 'package:languagetool_textfield/src/core/enums/delay_type.dart';
 import 'package:languagetool_textfield/src/core/enums/mistake_type.dart';
+import 'package:languagetool_textfield/src/domain/formatted_text_formatter.dart';
 import 'package:languagetool_textfield/src/domain/highlight_style.dart';
 import 'package:languagetool_textfield/src/domain/language_check_service.dart';
 import 'package:languagetool_textfield/src/domain/mistake.dart';
@@ -15,12 +16,18 @@ import 'package:languagetool_textfield/src/implementations/throttling_lang_tool_
 import 'package:languagetool_textfield/src/utils/closed_range.dart';
 import 'package:languagetool_textfield/src/utils/keep_latest_response_service.dart';
 import 'package:languagetool_textfield/src/utils/mistake_popup.dart';
+import 'package:languagetool_textfield/src/utils/utils.dart';
 
 /// A TextEditingController with overrides buildTextSpan for building
 /// marked TextSpans with tap recognizer
 class LanguageToolController extends TextEditingController {
   /// Color scheme to highlight mistakes
   final HighlightStyle highlightStyle;
+
+  /// A list of formatters to apply to the text.
+  ///
+  /// These formatters can be used to customize the appearance of the text.
+  final List<FormattedTextFormatter>? formatters;
 
   /// Represents the type of delay for language checking.
   ///
@@ -87,6 +94,7 @@ class LanguageToolController extends TextEditingController {
     this.highlightStyle = const HighlightStyle(),
     this.delay = Duration.zero,
     this.delayType = DelayType.debouncing,
+    this.formatters,
   }) {
     _languageCheckService = _getLanguageCheckService();
   }
@@ -187,14 +195,29 @@ class LanguageToolController extends TextEditingController {
       final mistakeEndOffset = min(mistake.endOffset, text.length);
       if (mistake.offset > mistakeEndOffset) continue;
 
-      /// TextSpan before mistake
-      yield TextSpan(
-        text: text.substring(
-          currentOffset,
-          min(mistake.offset, text.length),
-        ),
-        style: style,
+      final textBefore = text.substring(
+        currentOffset,
+        min(mistake.offset, text.length),
       );
+
+      final List<InlineSpan> children = FormattedTextUtils.formattedSpans(
+        context,
+        textBefore,
+        style: style,
+        showFormattingCharacters: true,
+        formatters: formatters,
+      );
+
+      yield TextSpan(children: children);
+
+      /// TextSpan before mistake
+      // yield TextSpan(
+      //   text: text.substring(
+      //     currentOffset,
+      //     min(mistake.offset, text.length),
+      //   ),
+      //   style: style,
+      // );
 
       /// Get a highlight color
       final Color mistakeColor = _getMistakeColor(mistake.type);
@@ -252,11 +275,21 @@ class LanguageToolController extends TextEditingController {
 
     final textAfterMistake = text.substring(currentOffset);
 
-    /// TextSpan after mistake
-    yield TextSpan(
-      text: textAfterMistake,
+    final List<InlineSpan> children = FormattedTextUtils.formattedSpans(
+      context,
+      textAfterMistake,
       style: style,
+      showFormattingCharacters: true,
+      formatters: formatters,
     );
+
+    yield TextSpan(children: children);
+
+    /// TextSpan after mistake
+    // yield TextSpan(
+    //   text: textAfterMistake,
+    //   style: style,
+    // );
   }
 
   /// Filters the list of mistakes based on the changes
